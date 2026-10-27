@@ -4,7 +4,7 @@ A Claude Code skill for pull request reviews where every finding carries evidenc
 
 Automated reviewers tend to overstate and to label pre-existing bugs as regressions. This skill treats their output as hypotheses and runs each one through verification before anything is posted.
 
-## What it does
+## Review phases
 
 | Phase | Purpose |
 |---|---|
@@ -13,9 +13,19 @@ Automated reviewers tend to overstate and to label pre-existing bugs as regressi
 | 2. Initial findings | Run `code-review` — output is a hypothesis |
 | 3. Verify | Confirm code, regression vs merge-base, claim scope, reachable call path; parallel subagents for large PRs |
 | 3b. Re-review | Status of findings from an earlier review: fixed, partial, open, or moved |
-| 4. Collisions | Detect *functional* overrides of other merged PRs, not just merge conflicts |
-| 5. Production | Read-only queries per engine (MySQL/MariaDB, PostgreSQL, SQLite, SQL Server, MongoDB), cheapest first |
+| 4. Collisions | Calls `pr-collision-check` |
+| 5. Production | Calls `prod-impact-query` |
 | 6. Post | Ask first, re-check head SHA, post via `gh` / `tea` |
+
+## Skills
+
+One plugin, three skills — each does one job and the last two also run on their own:
+
+| Skill | Job |
+|---|---|
+| `verified-pr-review` | Orchestrates the full review (phases below) |
+| `pr-collision-check` | Detects *functional* overrides of other merged/open PRs, not just merge conflicts |
+| `prod-impact-query` | Read-only production queries per engine (MySQL/MariaDB, PostgreSQL, SQLite, SQL Server, MongoDB), cheapest first |
 
 ## Install
 
@@ -26,7 +36,7 @@ As a plugin:
 /plugin install verified-pr-review@verified-pr-review
 ```
 
-Or copy/symlink `skills/verified-pr-review` into `~/.claude/skills/`.
+Or copy/symlink all three folders under `skills/` into `~/.claude/skills/`.
 
 ## Requirements
 

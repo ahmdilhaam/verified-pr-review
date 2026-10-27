@@ -1,6 +1,6 @@
 ---
 name: verified-pr-review
-description: Review a pull request down to concrete evidence in any repo (GitHub/Gitea) — every finding is verified against the PR's code, classified as regression vs pre-existing bug, checked for functional collisions with other PRs, then measured against the production database with read-only queries for the detected engine (MySQL/MariaDB, PostgreSQL, SQLite, SQL Server, MongoDB). Use when the user asks to "review PR #N", pastes a PR link, or asks whether a PR overrides another PR.
+description: Review a pull request down to concrete evidence in any repo (GitHub/Gitea) — every finding is verified against the PR's code, classified as regression vs pre-existing bug, checked for functional collisions with other PRs (via pr-collision-check), then measured against production with read-only queries (via prod-impact-query). Use when the user asks to "review PR #N" or pastes a PR link for review. For a collision question alone, use pr-collision-check.
 ---
 
 # Verified PR Review
@@ -89,34 +89,11 @@ Now read the saved prior review. For each of its findings, check `$PR` (and `git
 
 ## Phase 4 — Collisions with other PRs
 
-```bash
-gh pr list --repo $R --state merged --base "$BASE" --limit 20 --json number,title,files,mergeCommit
-gh pr list --repo $R --state open --base "$BASE" --json number,title,files
-git merge-base --is-ancestor <merge-sha> $PR && echo included || echo created-before
-git merge-tree --write-tree "$REMOTE/$BASE" $PR >/dev/null && echo clean-merge
-git diff $MB $PR -- <file touched by the other PR>
-```
-
-Only consider PRs that share files with this one. A "clean merge" does **not** mean safe. Check for **functional** overrides:
-- Redirects, menu links, or routes moved to a new page/endpoint → the other PR's work goes unused.
-- New UI/response that revives a column/feature another PR deliberately removed (check that PR's description and project memory for "intentional" decisions).
-- A function fixed by another PR is no longer called from the active path.
+Run the `pr-collision-check` skill with the refs already set (`$R`, `$N`, `$REMOTE`, `$BASE`, `$PR`, `$MB`). Can run in parallel with phases 2–3.
 
 ## Phase 5 — Measure against production (read-only)
 
-Claude usually has no production DB access: provide the queries, the user runs them in their DB client and pastes the results.
-
-1. **Detect the engine** from the repo: `.env*` (`DB_CONNECTION`, `DATABASE_URL` scheme), `config/database.*`, `prisma/schema.prisma` (`provider`), `drizzle.config.*` (`dialect`), `ormconfig`/`knexfile`/`settings.py` (`ENGINE`), `docker-compose*.yml` (image). Ask the user if production differs from dev (e.g. SQLite in dev, Postgres in production).
-2. Open that engine's section in `references/db-engines.md` — version, indexes, size, execution plan without executing, timeouts, and the commands that **do execute** the query (forbidden for heavy queries).
-3. Cheapest first:
-   1. Version + indexes + table size (metadata only).
-   2. Execution plan of the **exact** query the PR code runs (copy columns, filters, ordering).
-   3. Aggregates limited to one tenant/account/month or the smallest relevant subset.
-   4. Wide aggregates — only if 1–3 are not enough; set a timeout and ask for it to run off-peak.
-4. An empty result must be paired with a **control query** using the same filter that does return rows, to prove the filter values (polymorphic type strings, enums, escaping) are right.
-5. State in the report when a query is only an upper bound/estimate because its logic is not identical to the code, and when column names were assumed rather than checked against the schema.
-6. Reuse numbers already in the repo profile (label them with their measurement date) before asking for new ones.
-7. Store stable facts you learn (table sizes, indexes present/missing) in the repo profile or project memory.
+For each finding where a production number would change the verdict (blocker vs note, real vs theoretical), run the `prod-impact-query` skill with the exact query logic the PR code runs. A finding reaches "Blocker — proven in production data" only through its output.
 
 ## Phase 6 — Posting
 
