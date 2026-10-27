@@ -1,6 +1,6 @@
 {
   "name": "verified-pr-review",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "PR review where every finding is verified against the PR code, separated into regression vs pre-existing bug, checked for collisions with other PRs, and measured against production with read-only queries.",
   "author": { "name": "ahmdilhaam" },
   "repository": "https://github.com/ahmdilhaam/verified-pr-review",

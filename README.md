@@ -9,9 +9,10 @@ Automated reviewers tend to overstate and to label pre-existing bugs as regressi
 | Phase | Purpose |
 |---|---|
 | 0. Repo profile | Load base branch, domain checklist, DB engine, known large tables |
-| 1. PR context | Fetch the PR head without checking it out |
+| 1. PR context | Fetch the PR head into `refs/vpr/<N>` without checking it out; detect prior reviews |
 | 2. Initial findings | Run `code-review` — output is a hypothesis |
-| 3. Verify | Confirm code, regression vs pre-existing bug, claim scope, reachable call path |
+| 3. Verify | Confirm code, regression vs merge-base, claim scope, reachable call path; parallel subagents for large PRs |
+| 3b. Re-review | Status of findings from an earlier review: fixed, partial, open, or moved |
 | 4. Collisions | Detect *functional* overrides of other merged PRs, not just merge conflicts |
 | 5. Production | Read-only queries per engine (MySQL/MariaDB, PostgreSQL, SQLite, SQL Server, MongoDB), cheapest first |
 | 6. Post | Ask first, re-check head SHA, post via `gh` / `tea` |
