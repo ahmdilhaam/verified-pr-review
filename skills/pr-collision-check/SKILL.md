@@ -13,7 +13,12 @@ Ground rules:
 
 ## Setup (skip if the caller already has `$PR`, `$MB`, `$REMOTE`, `$BASE`)
 
-Repo profile, if present: `<repo>/.claude/verified-pr-review.md` (base branch, remotes, domain checklist). Platform: `gh` for GitHub, `tea` for Gitea. `R=<owner/repo>`, `N=<PR number>`.
+Repo profile (base branch, remotes, domain checklist), first match wins:
+1. `<repo>/.claude/verified-pr-review.md`
+2. `<repo>/.claude/skills/verified-pr-review/references/repos/<repo-name>.md` (project-local copy of verified-pr-review)
+3. `references/repos/<repo-name>.md` in the verified-pr-review skill folder
+
+Platform: `gh` for GitHub, `tea` for Gitea. `R=<owner/repo>`, `N=<PR number>`.
 
 ```bash
 git remote -v | grep fetch          # remote whose URL matches $R → $REMOTE (may not be origin)

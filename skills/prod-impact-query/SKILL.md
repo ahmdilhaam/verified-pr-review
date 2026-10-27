@@ -11,7 +11,7 @@ Claude usually has no production DB access: provide the queries, the user runs t
 
 ## Steps
 
-1. **Repo profile:** read `<repo>/.claude/verified-pr-review.md` if present. Reuse its large-table facts and proven queries (label them with their measurement date) before asking for new numbers.
+1. **Repo profile**, first match wins: `<repo>/.claude/verified-pr-review.md`; `<repo>/.claude/skills/verified-pr-review/references/repos/<repo-name>.md` (project-local copy of verified-pr-review); `references/repos/<repo-name>.md` in the verified-pr-review skill folder. Also check project memory. Reuse its large-table facts and proven queries (label them with their measurement date) before asking for new numbers.
 2. **Detect the engine** from the repo: `.env*` (`DB_CONNECTION`, `DATABASE_URL` scheme), `config/database.*`, `prisma/schema.prisma` (`provider`), `drizzle.config.*` (`dialect`), `ormconfig`/`knexfile`/`settings.py` (`ENGINE`), `docker-compose*.yml` (image). Ask the user if production differs from dev (e.g. SQLite in dev, Postgres in production).
 3. Open that engine's section in `references/db-engines.md` — version, indexes, size, execution plan without executing, timeouts, and the commands that **do execute** the query (forbidden for heavy queries).
 4. Cheapest first:
