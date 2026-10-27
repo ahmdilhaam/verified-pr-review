@@ -1,0 +1,11 @@
+{
+  "name": "verified-pr-review",
+  "owner": { "name": "ahmdilhaam" },
+  "plugins": [
+    {
+      "name": "verified-pr-review",
+      "source": "./",
+      "description": "Evidence-backed PR review: verify every finding, separate regressions from pre-existing bugs, check PR collisions, measure impact on production read-only."
+    }
+  ]
+}
